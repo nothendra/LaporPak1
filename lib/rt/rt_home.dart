@@ -12,13 +12,17 @@ class VideoHeader extends StatefulWidget {
   const VideoHeader({super.key});
 
   @override
-  State<VideoHeader> createState() => _VideoHeaderRtState();
+  State<VideoHeader> createState() => _VideoHeaderWargaState();
 }
 
-class _VideoHeaderRtState extends State<VideoHeader> {
+class _VideoHeaderWargaState extends State<VideoHeader>
+    with AutomaticKeepAliveClientMixin {
   late VideoPlayerController _controller;
   double _volume = 0.5;
   bool _isMuted = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -34,7 +38,9 @@ class _VideoHeaderRtState extends State<VideoHeader> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_controller.value.isInitialized) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -53,6 +59,7 @@ class _VideoHeaderRtState extends State<VideoHeader> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
@@ -105,8 +112,8 @@ class _VideoHeaderRtState extends State<VideoHeader> {
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           trackHeight: 2,
-                          thumbShape:
-                              const RoundSliderThumbShape(enabledThumbRadius: 5),
+                          thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 5),
                         ),
                         child: SizedBox(
                           width: 80,
@@ -140,16 +147,16 @@ class _VideoHeaderRtState extends State<VideoHeader> {
 }
 
 // ============================================
-// 🔹 Halaman Home Pak RT (Sama Gaya dengan Admin)
+// 🔹 Halaman Home untuk RT
 // ============================================
-class HomeRt extends StatefulWidget {
-  const HomeRt({super.key});
+class HomeScreenrt extends StatefulWidget {
+  const HomeScreenrt({super.key});
 
   @override
-  State<HomeRt> createState() => _HomeRtState();
+  State<HomeScreenrt> createState() => _HomeScreenrtState();
 }
 
-class _HomeRtState extends State<HomeRt> {
+class _HomeScreenrtState extends State<HomeScreenrt> {
   int _selectedIndex = 0;
 
   final List<FlutterVizBottomNavigationBarModel> navItems = [
@@ -159,55 +166,58 @@ class _HomeRtState extends State<HomeRt> {
     FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
   ];
 
-  void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
-
-    Widget? nextPage;
-    switch (index) {
-      case 0:
-        nextPage = const HomeRt();
-        break;
-      case 1:
-        nextPage = const DatePage();
-        break;
-      case 2:
-        nextPage = const historyyrt();
-        break;
-      case 3:
-        nextPage = ProfilKetua();
-        break;
-    }
-
-    if (nextPage != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => nextPage!),
-      );
-    }
-  }
-
   final List<Map<String, dynamic>> steps = [
     {
       "icon": Icons.report_problem_outlined,
-      "title": "1. Periksa Laporan",
-      "desc": "Tinjau keluhan warga yang masuk dengan cermat.",
+      "title": "1. Buat Laporan",
+      "desc": "Laporkan keluhan warga dengan jelas dan lengkap.",
     },
     {
-      "icon": Icons.assignment_turned_in_outlined,
-      "title": "2. Verifikasi Laporan",
-      "desc": "Pastikan laporan sesuai dan valid sebelum diteruskan.",
+      "icon": Icons.upload_file_outlined,
+      "title": "2. Unggah Bukti",
+      "desc": "Tambahkan foto atau video untuk memperkuat laporan Anda.",
     },
     {
-      "icon": Icons.build_outlined,
-      "title": "3. Tindak Lanjut",
-      "desc": "Koordinasikan penanganan masalah bersama pihak terkait.",
+      "icon": Icons.verified_outlined,
+      "title": "3. Diverifikasi RT",
+      "desc": "Laporan Anda akan diverifikasi oleh ketua RT.",
     },
     {
       "icon": Icons.done_all_outlined,
       "title": "4. Selesai",
-      "desc": "Tandai laporan yang sudah ditangani dengan baik.",
+      "desc": "Pantau hingga laporan Anda ditangani dengan baik.",
     },
   ];
+
+  // ✅ BOTTOM NAVIGATION SAMA SEPERTI DATEPAGE
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+    setState(() => _selectedIndex = index);
+
+    switch (index) {
+      case 0:
+        // Halaman ini
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DatePageRT()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Historyyrt()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilKetua()),
+        );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,20 +225,20 @@ class _HomeRtState extends State<HomeRt> {
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f7f7),
+
+      // ✅ BOTTOM NAVIGATION BAR DIBENERIN
       bottomNavigationBar: BottomNavigationBar(
         items: navItems
-            .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                label: item.label,
-              ),
-            )
+            .map((e) => BottomNavigationBarItem(
+                  icon: Icon(e.icon),
+                  label: e.label,
+                ))
             .toList(),
-        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
+        backgroundColor: Colors.white,
         elevation: 8,
-        iconSize: 24,
-        selectedItemColor: const Color(0xff5f34e0),
+        iconSize: 22,
+        selectedItemColor: const Color(0xff5f33e2),
         unselectedItemColor: const Color(0xffb5a1f0),
         selectedFontSize: 10,
         unselectedFontSize: 9,
@@ -237,10 +247,10 @@ class _HomeRtState extends State<HomeRt> {
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
       ),
+
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🔹 Header
             Stack(
               children: [
                 Container(
@@ -256,13 +266,14 @@ class _HomeRtState extends State<HomeRt> {
                 SafeArea(
                   child: Column(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(Icons.menu, color: Colors.white, size: 26),
-                            Text(
+                            const SizedBox(width: 26),
+                            const Text(
                               "Lapor Pak",
                               style: TextStyle(
                                 color: Colors.white,
@@ -270,8 +281,15 @@ class _HomeRtState extends State<HomeRt> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Icon(Icons.notifications_none,
-                                color: Colors.white, size: 26),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.asset(
+                                'assets/logo.png',
+                                width: 26,
+                                height: 26,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -283,13 +301,12 @@ class _HomeRtState extends State<HomeRt> {
                 ),
               ],
             ),
-
-            // 🔹 Kartu Sambutan
             const SizedBox(height: 25),
             Container(
               width: double.infinity,
               margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
               decoration: BoxDecoration(
                 color: const Color(0xff5f34e0),
                 borderRadius: BorderRadius.circular(20),
@@ -301,10 +318,10 @@ class _HomeRtState extends State<HomeRt> {
                   ),
                 ],
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Halo, Pak RT 👋",
                     style: TextStyle(
                       color: Colors.white,
@@ -312,40 +329,18 @@ class _HomeRtState extends State<HomeRt> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Selamat datang di dashboard Lapor Pak!\nKelola laporan warga dengan mudah dan cepat.",
+                  SizedBox(height: 10),
+                  Text(
+                    "Selamat datang di aplikasi Lapor Pak!\nLaporkan keluhan lingkungan dengan mudah dan cepat.",
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: const Text(
-                      "Lihat Laporan Warga",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
-
-            // 🔹 Langkah Penggunaan
             const SizedBox(height: 25),
             Container(
               width: double.infinity,
@@ -386,72 +381,71 @@ class _HomeRtState extends State<HomeRt> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      double ratio = 1.15;
-                      if (constraints.maxWidth < 350) ratio = 0.95;
-                      else if (constraints.maxWidth < 400) ratio = 1.05;
-
-                      return GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: steps.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                          childAspectRatio: ratio,
+                  GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: steps.length,
+                    gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: screenWidth < 350
+                          ? 0.95
+                          : screenWidth < 400
+                              ? 1.05
+                              : 1.15,
+                    ),
+                    itemBuilder: (context, index) {
+                      final step = steps[index];
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xfff8f6ff),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: const Color(0xffe6e1ff),
+                            width: 1,
+                          ),
                         ),
-                        itemBuilder: (context, index) {
-                          final step = steps[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xfff8f6ff),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: const Color(0xffe6e1ff),
-                                width: 1,
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xff5f34e0).withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(10),
+                              child: Icon(
+                                step["icon"],
+                                color: const Color(0xff5f34e0),
+                                size: 28,
                               ),
                             ),
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xff5f34e0).withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  padding: const EdgeInsets.all(10),
-                                  child: Icon(
-                                    step["icon"],
-                                    color: const Color(0xff5f34e0),
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  step["title"],
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  step["desc"],
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.black54,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 10),
+                            Text(
+                              step["title"],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
                             ),
-                          );
-                        },
+                            const SizedBox(height: 6),
+                            Text(
+                              step["desc"],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black54,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),

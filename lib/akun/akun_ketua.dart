@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../Date/date.dart';
-import '../history/history.dart';
-import '../Home/home.dart';
+import '../Date/datert.dart';
+import '../history/historyrt.dart';
+import '../rt/rt_home.dart';
 import '../flutterViz_bottom_navigationBar_model.dart';
 
-class ProfilKetua extends StatelessWidget {
+class ProfilKetua extends StatefulWidget {
+  const ProfilKetua({super.key});
+
+  @override
+  State<ProfilKetua> createState() => _ProfilKetuaState();
+}
+
+class _ProfilKetuaState extends State<ProfilKetua> {
+  int _selectedIndex = 3;
+
   final List<FlutterVizBottomNavigationBarModel> navItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
     FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
@@ -13,16 +22,40 @@ class ProfilKetua extends StatelessWidget {
     FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
   ];
 
-  final int _selectedIndex = 3; // Halaman aktif: Akun
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+    setState(() => _selectedIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreenrt()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DatePageRT()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Historyyrt()),
+        );
+        break;
+      case 3:
+        // Halaman ini (Akun)
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
 
-      // =============================
-      // APP BAR
-      // =============================
       appBar: AppBar(
         elevation: 4,
         centerTitle: true,
@@ -41,15 +74,15 @@ class ProfilKetua extends StatelessWidget {
         ],
       ),
 
-      // =============================
-      // NAVBAR
-      // =============================
+      // ✅ BOTTOM NAVIGATION BAR SAMA SEPERTI HALAMAN LAIN
       bottomNavigationBar: BottomNavigationBar(
         items: navItems
-            .map((item) => BottomNavigationBarItem(
-                  icon: Icon(item.icon),
-                  label: item.label,
-                ))
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.label,
+              ),
+            )
             .toList(),
         currentIndex: _selectedIndex,
         backgroundColor: Colors.white,
@@ -61,44 +94,8 @@ class ProfilKetua extends StatelessWidget {
         unselectedFontSize: 9,
         showSelectedLabels: true,
         showUnselectedLabels: false,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeWarga()),
-              );
-              break;
-
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const DatePage()),
-              );
-              break;
-
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HistoryLaporan()),
-              );
-              break;
-
-            case 3:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilKetua()),
-              );
-              break;
-
-            default:
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Menu ${navItems[index].label} belum diaktifkan"),
-                ),
-              );
-          }
-        },
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
       ),
 
       // =============================
@@ -125,20 +122,20 @@ class ProfilKetua extends StatelessWidget {
                   width: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xff5f34e0), width: 3),
+                    border: Border.all(
+                      color: const Color(0xff5f34e0),
+                      width: 3,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image.asset(
-                    "assets/profile.png",
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.asset("assets/profile.png", fit: BoxFit.cover),
                 ),
               ],
             ),
@@ -153,7 +150,7 @@ class ProfilKetua extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             const Text(
-              "Warga",
+              "Ketua RT",
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -168,14 +165,14 @@ class ProfilKetua extends StatelessWidget {
             _infoCard(
               icon: Icons.mail_outline,
               title: "Email",
-              value: "emailwarga@gmail.com",
+              value: "emailpakrete@gmail.com",
             ),
             const SizedBox(height: 14),
             _infoCard(
               icon: Icons.location_on_outlined,
               title: "Alamat",
               value:
-                  "Perumahan Alfa, Blok A-15, Blimbing, Kec. Torimiso, Kota Malang, 65112",
+                  "Perumahan Alfa, Blok A-12, Blimbing, Kec. Torimiso, Kota Malang, 65112",
             ),
 
             const SizedBox(height: 35),
@@ -236,10 +233,7 @@ class ProfilKetua extends StatelessWidget {
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(
-          color: const Color(0xffe7e3ff),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xffe7e3ff), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

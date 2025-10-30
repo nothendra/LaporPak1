@@ -38,9 +38,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
         '/home': (context) => const HomeWarga(), // warga
-        '/rt_home': (context) => HomeRt(), // RT
+        '/rt_home': (context) => HomeScreenrt(), // RT
         '/home_admin': (context) => HomeAdmin(), // admin
-        '/historyrt': (context) => const historyyrt(), // RT
+        '/historyrt': (context) => const Historyyrt(), // RT
         '/tambah': (context) => const UploadKeluhan(), // warga
         '/date': (context) => const DatePage(), // warga ✅ (hanya sekali)
         '/history': (context) => const HistoryLaporan(), // warga

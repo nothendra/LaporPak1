@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import '../flutterViz_bottom_navigationBar_model.dart';
-import '../history/history.dart';
-import '../akun/akun.dart';
-import '../Formulir/tambah.dart';
-import '../Home/home.dart'; // ✅ tambahkan agar tombol Home berfungsi
+import '../rt/rt_home.dart';
+import '../history/historyrt.dart';
+import '../akun/akun_ketua.dart';
 
-class DatePage extends StatefulWidget {
-  const DatePage({super.key});
+class DatePageRT extends StatefulWidget {
+  const DatePageRT({super.key});
 
   @override
-  State<DatePage> createState() => _DatePageState();
+  State<DatePageRT> createState() => _DatePageState();
 }
 
-class _DatePageState extends State<DatePage> {
-  int _selectedIndex = 1; // posisi tombol "Date"
-
+class _DatePageState extends State<DatePageRT> {
   final List<FlutterVizBottomNavigationBarModel> flutterVizBottomNavigationBarItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
     FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.add, label: "Tambah"),
     FlutterVizBottomNavigationBarModel(icon: Icons.description, label: "History"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account")
+    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
   ];
 
+  int _selectedIndex = 1;
   DateTime _selectedDate = DateTime.now();
 
-  final List<Map<String, dynamic>> _reports = [
+  final List<Map<String, dynamic>> _allReports = [
     {
       'title': 'Lampu Jalan Mati',
       'location': 'Didepan Blok A-2',
@@ -48,59 +45,48 @@ class _DatePageState extends State<DatePage> {
       'title': 'Lampu Pos Satpam Mati',
       'location': 'Disamping pos satpam',
       'time': '07:00 PM',
-      'status': 'Selesai',
+      'status': 'Done',
       'statusColor': const Color(0xffc3f7d1),
       'icon': Icons.check_circle_outline,
       'iconColor': Colors.green,
     },
   ];
 
-  // ✅ fungsi navigasi bawah
+  String _selectedFilter = "All";
+
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
-    setState(() => _selectedIndex = index);
-
+    setState(() {
+      _selectedIndex = index;
+    });
     switch (index) {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeWarga()),
+          MaterialPageRoute(builder: (context) => const HomeScreenrt()),
         );
         break;
-
       case 1:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DatePage()),
-        );
+        // Halaman ini
         break;
-
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const UploadKeluhan()),
+          MaterialPageRoute(builder: (context) => const Historyyrt()),
         );
         break;
-
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HistoryLaporan()),
+          MaterialPageRoute(builder: (context) => ProfilKetua()),
         );
         break;
-
-      case 4:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Profile()),
-        );
-        break;
-
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Menu ${flutterVizBottomNavigationBarItems[index].label} belum diaktifkan")),
-        );
     }
+  }
+
+  List<Map<String, dynamic>> get _filteredReports {
+    if (_selectedFilter == "All") return _allReports;
+    return _allReports.where((r) => r['status'] == _selectedFilter).toList();
   }
 
   @override
@@ -112,8 +98,9 @@ class _DatePageState extends State<DatePage> {
       appBar: AppBar(
         elevation: 4,
         centerTitle: true,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         backgroundColor: const Color(0xff5f34e0),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Lapor Pak",
           style: TextStyle(
@@ -122,21 +109,17 @@ class _DatePageState extends State<DatePage> {
             color: Colors.white,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
-        actions: const [
-          Icon(Icons.notifications, color: Colors.white, size: 24),
-        ],
       ),
 
-      // ✅ bottom navigation aktif semua
+      // ✅ BOTTOM NAVIGATION BAR DIBENERIN
       bottomNavigationBar: BottomNavigationBar(
         items: flutterVizBottomNavigationBarItems
             .map((e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label))
             .toList(),
-        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
+        backgroundColor: Colors.white,
         elevation: 8,
-        iconSize: 24,
+        iconSize: 22,
         selectedItemColor: const Color(0xff5f33e2),
         unselectedItemColor: const Color(0xffb5a1f0),
         selectedFontSize: 10,
@@ -150,7 +133,7 @@ class _DatePageState extends State<DatePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🔹 Kalender Pengaduan
+            // Kalender Pengaduan
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -188,13 +171,24 @@ class _DatePageState extends State<DatePage> {
                       ),
                     ),
                     const Divider(height: 1, thickness: 1),
-                    CalendarDatePicker(
-                      initialDate: _selectedDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2050),
-                      onDateChanged: (date) {
-                        setState(() => _selectedDate = date);
-                      },
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: Color(0xff5f34e0),
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black87,
+                        ),
+                      ),
+                      child: CalendarDatePicker(
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2050),
+                        onDateChanged: (date) {
+                          setState(() {
+                            _selectedDate = date;
+                          });
+                        },
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
@@ -211,24 +205,27 @@ class _DatePageState extends State<DatePage> {
               ),
             ),
 
-            // 🔹 Filter & Laporan
             const SizedBox(height: 16),
+
+            // Tombol filter status
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: [
-                  _buildFilterButton(label: "All", isSelected: true),
-                  _buildFilterButton(label: "On Hold", isSelected: false),
-                  _buildFilterButton(label: "In Progress", isSelected: false),
-                  _buildFilterButton(label: "Done", isSelected: false),
+                  _buildFilterButton(label: "All"),
+                  _buildFilterButton(label: "On Hold"),
+                  _buildFilterButton(label: "In Progress"),
+                  _buildFilterButton(label: "Done"),
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
 
-            ..._reports.map((report) {
+            // Daftar laporan sesuai filter
+            ..._filteredReports.map((report) {
               return _buildReportCard(
                 screenWidth,
                 report['title'],
@@ -240,6 +237,7 @@ class _DatePageState extends State<DatePage> {
                 report['iconColor'],
               );
             }).toList(),
+
             const SizedBox(height: 50),
           ],
         ),
@@ -247,12 +245,17 @@ class _DatePageState extends State<DatePage> {
     );
   }
 
-  Widget _buildFilterButton({required String label, required bool isSelected}) {
+  Widget _buildFilterButton({required String label}) {
     const Color purple = Color(0xff5f34e0);
+    final bool isSelected = _selectedFilter == label;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: MaterialButton(
-        onPressed: () {},
+        onPressed: () {
+          setState(() {
+            _selectedFilter = label;
+          });
+        },
         color: isSelected ? purple : purple.withOpacity(0.1),
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -301,7 +304,6 @@ class _DatePageState extends State<DatePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Judul + Icon
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -360,7 +362,7 @@ class _DatePageState extends State<DatePage> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 10,
-                      color: (status == 'On Hold' || status == 'Selesai')
+                      color: (status == 'On Hold' || status == 'Done')
                           ? Colors.black
                           : Colors.white,
                     ),
