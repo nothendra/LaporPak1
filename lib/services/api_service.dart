@@ -12,8 +12,8 @@ class ApiService {
 
     // Defaults per platform
     if (kIsWeb) {
-      // Expect same origin proxy or explicit define
-      return '/api';
+      // Default to local Laravel dev server to avoid hitting the Flutter dev server
+      return 'http://127.0.0.1:8000/api';
     }
     // For emulators/simulators
     if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android)) {

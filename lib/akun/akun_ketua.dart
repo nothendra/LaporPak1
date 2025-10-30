@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/services/auth_provider.dart';
 import 'package:lottie/lottie.dart';
 import '../Date/datert.dart';
 import '../history/historyrt.dart';
@@ -17,9 +19,18 @@ class _ProfilKetuaState extends State<ProfilKetua> {
 
   final List<FlutterVizBottomNavigationBarModel> navItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.description, label: "History"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.calendar_today,
+      label: "Date",
+    ),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.description,
+      label: "History",
+    ),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.account_circle,
+      label: "Account",
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -50,6 +61,11 @@ class _ProfilKetuaState extends State<ProfilKetua> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final user = auth.userData ?? {};
+    final name = (user['name'] ?? 'Pengguna').toString();
+    final email = (user['email'] ?? '-').toString();
+    final role = (auth.userRole ?? 'rt').toString();
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
 
@@ -129,18 +145,18 @@ class _ProfilKetuaState extends State<ProfilKetua> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              "Kentangtintung",
-              style: TextStyle(
+            Text(
+              name,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
                 color: Colors.black87,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              "Ketua RT",
-              style: TextStyle(
+            Text(
+              role[0].toUpperCase() + role.substring(1),
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: Color(0xff5f34e0),
@@ -158,7 +174,7 @@ class _ProfilKetuaState extends State<ProfilKetua> {
                   _infoCard(
                     icon: Icons.mail_outline,
                     title: "Email",
-                    value: "emailpakrete@gmail.com",
+                    value: email,
                   ),
                   const SizedBox(height: 14),
                   _infoCard(
@@ -181,8 +197,14 @@ class _ProfilKetuaState extends State<ProfilKetua> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Tambahkan aksi logout nanti
+                  onPressed: () async {
+                    await Provider.of<AuthProvider>(
+                      context,
+                      listen: false,
+                    ).logout();
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    }
                   },
                   icon: const Icon(Icons.logout, color: Colors.white),
                   label: const Text(
@@ -211,14 +233,15 @@ class _ProfilKetuaState extends State<ProfilKetua> {
 
       /// ✅ Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
-        items: navItems
-            .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                label: item.label,
-              ),
-            )
-            .toList(),
+        items:
+            navItems
+                .map(
+                  (item) => BottomNavigationBarItem(
+                    icon: Icon(item.icon),
+                    label: item.label,
+                  ),
+                )
+                .toList(),
         currentIndex: _selectedIndex,
         backgroundColor: Colors.white,
         elevation: 8,

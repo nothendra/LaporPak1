@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/services/auth_provider.dart';
 import 'package:video_player/video_player.dart';
 import '../flutterViz_bottom_navigationBar_model.dart';
 import '../Date/date.dart';
@@ -54,6 +56,9 @@ class _VideoHeaderWargaState extends State<VideoHeaderWarga> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final user = auth.userData ?? {};
+    final name = (user['name'] ?? 'Warga').toString();
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
@@ -64,78 +69,80 @@ class _VideoHeaderWargaState extends State<VideoHeaderWarga> {
         color: Colors.black12,
       ),
       clipBehavior: Clip.antiAlias,
-      child: _controller.value.isInitialized
-          ? Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
-                ),
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: _togglePlayPause,
-                    child: AnimatedOpacity(
-                      opacity: _controller.value.isPlaying ? 0.0 : 0.6,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        color: Colors.black54,
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 60,
+      child:
+          _controller.value.isInitialized
+              ? Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  ),
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: _togglePlayPause,
+                      child: AnimatedOpacity(
+                        opacity: _controller.value.isPlaying ? 0.0 : 0.6,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          color: Colors.black54,
+                          child: const Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 60,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  right: 8,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          _isMuted ? Icons.volume_off : Icons.volume_up,
-                          color: Colors.white,
-                          size: 20,
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _isMuted ? Icons.volume_off : Icons.volume_up,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: _toggleMute,
                         ),
-                        onPressed: _toggleMute,
-                      ),
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 2,
-                          thumbShape:
-                              const RoundSliderThumbShape(enabledThumbRadius: 5),
-                        ),
-                        child: SizedBox(
-                          width: 80,
-                          child: Slider(
-                            value: _volume,
-                            min: 0,
-                            max: 1,
-                            activeColor: Colors.white,
-                            inactiveColor: Colors.white24,
-                            onChanged: (value) {
-                              setState(() {
-                                _volume = value;
-                                if (!_isMuted) {
-                                  _controller.setVolume(_volume);
-                                }
-                              });
-                            },
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 2,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 5,
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: 80,
+                            child: Slider(
+                              value: _volume,
+                              min: 0,
+                              max: 1,
+                              activeColor: Colors.white,
+                              inactiveColor: Colors.white24,
+                              onChanged: (value) {
+                                setState(() {
+                                  _volume = value;
+                                  if (!_isMuted) {
+                                    _controller.setVolume(_volume);
+                                  }
+                                });
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )
-          : const Center(
-              child: CircularProgressIndicator(color: Color(0xff5f34e0)),
-            ),
+                ],
+              )
+              : const Center(
+                child: CircularProgressIndicator(color: Color(0xff5f34e0)),
+              ),
     );
   }
 }
@@ -153,12 +160,22 @@ class HomeWarga extends StatefulWidget {
 class _HomeWargaState extends State<HomeWarga> {
   int _selectedIndex = 0;
 
-  final List<FlutterVizBottomNavigationBarModel> flutterVizBottomNavigationBarItems = [
+  final List<FlutterVizBottomNavigationBarModel>
+  flutterVizBottomNavigationBarItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.calendar_today,
+      label: "Date",
+    ),
     FlutterVizBottomNavigationBarModel(icon: Icons.add, label: "Tambah"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.description, label: "History"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.description,
+      label: "History",
+    ),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.account_circle,
+      label: "Account",
+    ),
   ];
 
   final List<Map<String, dynamic>> steps = [
@@ -222,7 +239,11 @@ class _HomeWargaState extends State<HomeWarga> {
         break;
       default:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Menu ${flutterVizBottomNavigationBarItems[index].label} belum diaktifkan")),
+          SnackBar(
+            content: Text(
+              "Menu ${flutterVizBottomNavigationBarItems[index].label} belum diaktifkan",
+            ),
+          ),
         );
     }
   }
@@ -230,15 +251,24 @@ class _HomeWargaState extends State<HomeWarga> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final auth = Provider.of<AuthProvider>(context);
+    final user = auth.userData ?? {};
+    final name = (user['name'] ?? 'Warga').toString();
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f7f7),
 
       // ✅ Bottom Navigation disamakan dengan DatePage
       bottomNavigationBar: BottomNavigationBar(
-        items: flutterVizBottomNavigationBarItems
-            .map((e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label))
-            .toList(),
+        items:
+            flutterVizBottomNavigationBarItems
+                .map(
+                  (e) => BottomNavigationBarItem(
+                    icon: Icon(e.icon),
+                    label: e.label,
+                  ),
+                )
+                .toList(),
         backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         elevation: 8,
@@ -272,7 +302,10 @@ class _HomeWargaState extends State<HomeWarga> {
                   child: Column(
                     children: [
                       const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -285,8 +318,11 @@ class _HomeWargaState extends State<HomeWarga> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Icon(Icons.notifications_none,
-                                color: Colors.white, size: 26),
+                            Icon(
+                              Icons.notifications_none,
+                              color: Colors.white,
+                              size: 26,
+                            ),
                           ],
                         ),
                       ),
@@ -317,9 +353,9 @@ class _HomeWargaState extends State<HomeWarga> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Halo, Warga 👋",
-                    style: TextStyle(
+                  Text(
+                    "Halo, $name 👋",
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -339,12 +375,17 @@ class _HomeWargaState extends State<HomeWarga> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const UploadKeluhan()),
+                        MaterialPageRoute(
+                          builder: (context) => const UploadKeluhan(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -404,8 +445,10 @@ class _HomeWargaState extends State<HomeWarga> {
                   LayoutBuilder(
                     builder: (context, constraints) {
                       double ratio = 1.15;
-                      if (constraints.maxWidth < 350) ratio = 0.95;
-                      else if (constraints.maxWidth < 400) ratio = 1.05;
+                      if (constraints.maxWidth < 350)
+                        ratio = 0.95;
+                      else if (constraints.maxWidth < 400)
+                        ratio = 1.05;
                       return GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -434,7 +477,9 @@ class _HomeWargaState extends State<HomeWarga> {
                               children: [
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: const Color(0xff5f34e0).withOpacity(0.1),
+                                    color: const Color(
+                                      0xff5f34e0,
+                                    ).withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   padding: const EdgeInsets.all(10),

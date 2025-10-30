@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/services/auth_provider.dart';
 import 'package:lottie/lottie.dart';
 import '../flutterViz_bottom_navigationBar_model.dart';
 
@@ -13,10 +15,19 @@ class Profile extends StatelessWidget {
 
   final List<FlutterVizBottomNavigationBarModel> navItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.calendar_today,
+      label: "Date",
+    ),
     FlutterVizBottomNavigationBarModel(icon: Icons.add, label: "Tambah"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.description, label: "History"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.description,
+      label: "History",
+    ),
+    FlutterVizBottomNavigationBarModel(
+      icon: Icons.account_circle,
+      label: "Account",
+    ),
   ];
 
   final int _selectedIndex = 4; // Halaman aktif: Akun
@@ -54,6 +65,11 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final user = auth.userData ?? {};
+    final name = (user['name'] ?? 'Pengguna').toString();
+    final email = (user['email'] ?? '-').toString();
+    final role = (auth.userRole ?? 'warga').toString();
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
 
@@ -98,14 +114,15 @@ class Profile extends StatelessWidget {
       // ✅ BOTTOM NAVIGATION (TIDAK DIUBAH)
       // =============================
       bottomNavigationBar: BottomNavigationBar(
-        items: navItems
-            .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                label: item.label,
-              ),
-            )
-            .toList(),
+        items:
+            navItems
+                .map(
+                  (item) => BottomNavigationBarItem(
+                    icon: Icon(item.icon),
+                    label: item.label,
+                  ),
+                )
+                .toList(),
         currentIndex: _selectedIndex,
         backgroundColor: Colors.white,
         elevation: 8,
@@ -144,36 +161,36 @@ class Profile extends StatelessWidget {
                   width: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xff5f34e0), width: 3),
+                    border: Border.all(
+                      color: const Color(0xff5f34e0),
+                      width: 3,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image.asset(
-                    "assets/profile.png",
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.asset("assets/profile.png", fit: BoxFit.cover),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              "Kentangtintung",
-              style: TextStyle(
+            Text(
+              name,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
                 color: Colors.black87,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              "Warga",
-              style: TextStyle(
+            Text(
+              role[0].toUpperCase() + role.substring(1),
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: Color(0xff5f34e0),
@@ -184,11 +201,7 @@ class Profile extends StatelessWidget {
             // ==================================
             // INFO KONTAK
             // ==================================
-            _infoCard(
-              icon: Icons.mail_outline,
-              title: "Email",
-              value: "adakadabra@gmail.com",
-            ),
+            _infoCard(icon: Icons.mail_outline, title: "Email", value: email),
             const SizedBox(height: 14),
             _infoCard(
               icon: Icons.location_on_outlined,
@@ -205,8 +218,14 @@ class Profile extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Tambahkan aksi logout
+                onPressed: () async {
+                  await Provider.of<AuthProvider>(
+                    context,
+                    listen: false,
+                  ).logout();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
                 },
                 icon: const Icon(Icons.logout, color: Colors.white),
                 label: const Text(
@@ -255,10 +274,7 @@ class Profile extends StatelessWidget {
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(
-          color: const Color(0xffe7e3ff),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xffe7e3ff), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
