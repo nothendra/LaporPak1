@@ -53,23 +53,39 @@ class ProfileAdmin extends StatelessWidget {
       backgroundColor: const Color(0xfff8f8f8),
 
       // =============================
-      // APP BAR
+      // ✅ APP BAR (diseragamkan dengan Ketua RT)
       // =============================
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
         backgroundColor: const Color(0xff5f34e0),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeAdmin()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
         title: const Text(
-          "Lapor Pak - Admin",
+          'Profil Admin',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
-        actions: const [
-          Icon(Icons.notifications_none, color: Colors.white, size: 24),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 22,
+              height: 22,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
 
@@ -100,7 +116,7 @@ class ProfileAdmin extends StatelessWidget {
       ),
 
       // =============================
-      // BODY
+      // BODY (tidak diubah)
       // =============================
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),

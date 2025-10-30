@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/akun/akun_ketua.dart';
+import 'package:provider/provider.dart';
 import 'SplashScreen/SplashScreen.dart';
 import 'Login/login.dart';
 import 'Signup/signup.dart';
@@ -12,9 +13,15 @@ import 'history/history.dart';
 import 'akun/akun.dart';
 import 'history/historyrt.dart';
 import 'admin/home_admin.dart';
+import 'services/auth_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AuthProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

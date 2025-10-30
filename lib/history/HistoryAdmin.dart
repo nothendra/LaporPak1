@@ -24,7 +24,7 @@ class _ApprovementPageState extends State<Approvement> {
     "Dibatalkan"
   ];
 
-  int selectedIndex = 2; // posisi default (Approvement)
+  int _selectedIndex = 2; // posisi default (Approvement)
 
   final List<FlutterVizBottomNavigationBarModel> navItems = [
     FlutterVizBottomNavigationBarModel(icon: Icons.home, label: "Home"),
@@ -34,28 +34,35 @@ class _ApprovementPageState extends State<Approvement> {
   ];
 
   void _onItemTapped(int index) {
-    if (index == selectedIndex) return; // ⛔ Hindari reload halaman yang sama
+    if (index == _selectedIndex) return;
 
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeAdmin()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DateAdmin()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Approvement()),
-      );
-    } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileAdmin()),
-      );
+    setState(() => _selectedIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeAdmin()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DateAdmin()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Approvement()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileAdmin()),
+        );
+        break;
     }
   }
 
@@ -63,31 +70,42 @@ class _ApprovementPageState extends State<Approvement> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff8f6ff),
+
+      // ✅ AppBar diseragamkan seperti halaman RT
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
+        backgroundColor: const Color(0xff5f34e0),
+        elevation: 4,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DateAdmin()),
+            );
+          },
         ),
         title: const Text(
           "Approvement",
           style: TextStyle(
-            color: Colors.black87,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
-        centerTitle: true,
         actions: const [
           Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.notifications_none, color: Colors.black87),
+            padding: EdgeInsets.only(right: 15),
+            child: ImageIcon(
+              AssetImage('assets/logo.png'),
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ],
       ),
 
-      // 🔹 BODY
+      // ✅ Body tidak diubah (hanya gaya navigasi & AppBar yang diseragamkan)
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 30),
         child: Column(
@@ -108,7 +126,8 @@ class _ApprovementPageState extends State<Approvement> {
                       onTap: () => setState(() => selectedTab = tab),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                         decoration: BoxDecoration(
                           color: isActive
                               ? const Color(0xff6f3dee)
@@ -117,7 +136,8 @@ class _ApprovementPageState extends State<Approvement> {
                           boxShadow: isActive
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xff6f3dee).withOpacity(0.3),
+                                    color:
+                                        const Color(0xff6f3dee).withOpacity(0.3),
                                     blurRadius: 6,
                                     offset: const Offset(0, 3),
                                   )
@@ -159,16 +179,18 @@ class _ApprovementPageState extends State<Approvement> {
                 child: Column(
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                       child: Image.asset(
-                        'assets/illustration2.png',
+                        'assets/lampu_mati.png',
                         width: double.infinity,
                         height: 200,
                         fit: BoxFit.cover,
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -183,12 +205,14 @@ class _ApprovementPageState extends State<Approvement> {
                           const SizedBox(height: 4),
                           const Text(
                             "Didepan Pos Satpam",
-                            style: TextStyle(color: Colors.black54, fontSize: 13),
+                            style:
+                                TextStyle(color: Colors.black54, fontSize: 13),
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: const [
-                              Icon(Icons.access_time, color: Color(0xff6f3dee), size: 16),
+                              Icon(Icons.access_time,
+                                  color: Color(0xff6f3dee), size: 16),
                               SizedBox(width: 5),
                               Text(
                                 "07:00 AM",
@@ -237,7 +261,8 @@ class _ApprovementPageState extends State<Approvement> {
                             maxLines: 2,
                             decoration: InputDecoration(
                               hintText: "Tulis alasan di sini...",
-                              hintStyle: const TextStyle(color: Colors.black38),
+                              hintStyle:
+                                  const TextStyle(color: Colors.black38),
                               filled: true,
                               fillColor: const Color(0xfff7f4ff),
                               border: OutlineInputBorder(
@@ -247,8 +272,8 @@ class _ApprovementPageState extends State<Approvement> {
                                   width: 1,
                                 ),
                               ),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -296,22 +321,24 @@ class _ApprovementPageState extends State<Approvement> {
         ),
       ),
 
-      // ✅ BOTTOM NAVIGATION BAR (dibenerin)
+      // ✅ Bottom Navigation disamakan style-nya
       bottomNavigationBar: BottomNavigationBar(
         items: navItems
-            .map((item) => BottomNavigationBarItem(
-                  icon: Icon(item.icon),
-                  label: item.label,
-                ))
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.label,
+              ),
+            )
             .toList(),
-        currentIndex: selectedIndex,
+        currentIndex: _selectedIndex,
         backgroundColor: Colors.white,
         elevation: 8,
-        iconSize: 26,
+        iconSize: 22,
         selectedItemColor: const Color(0xff5f33e2),
         unselectedItemColor: const Color(0xffb5a1f0),
-        selectedFontSize: 11,
-        unselectedFontSize: 10,
+        selectedFontSize: 10,
+        unselectedFontSize: 9,
         showSelectedLabels: true,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,

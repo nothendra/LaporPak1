@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../OnBoarding/OnBoarding.dart';
+import 'package:flutter_application_1/services/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,27 +35,42 @@ class _SplashScreenState extends State<SplashScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.forward();
 
-    // Pindah otomatis ke onboarding
-    Timer(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 800),
-          transitionsBuilder: (context, animation, _, child) {
-            final tween = Tween(begin: const Offset(0, 1), end: Offset.zero)
-                .chain(CurveTween(curve: Curves.easeOutCubic));
-            return SlideTransition(position: animation.drive(tween), child: child);
-          },
-          pageBuilder: (context, _, __) => const OnboardingScreen(),
-        ),
-      );
+    // Setelah beberapa detik, arahkan berdasarkan status login
+    Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.isAuthenticated) {
+        final role = auth.userRole;
+        if (role == 'rt') {
+          Navigator.pushReplacementNamed(context, '/rt_home');
+        } else if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/home_admin');
+        } else {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 800),
+            transitionsBuilder: (context, animation, _, child) {
+              final tween = Tween(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeOutCubic));
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+            pageBuilder: (context, _, __) => const OnboardingScreen(),
+          ),
+        );
+      }
     });
   }
 
@@ -78,7 +95,7 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icon logo
+                // 🔄 Ganti Icon jadi Logo Gambar
                 Container(
                   width: screenWidth * 0.25,
                   height: screenWidth * 0.25,
@@ -86,15 +103,14 @@ class _SplashScreenState extends State<SplashScreen>
                     color: Colors.deepPurple.shade50,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(
-                    Icons.house_rounded,
-                    size: screenWidth * 0.15,
-                    color: Colors.deepPurple.shade600,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Image.asset('assets/logo2.png', fit: BoxFit.contain),
                   ),
                 ),
+
                 SizedBox(height: screenHeight * 0.04),
 
-                // Nama Aplikasi
                 Text(
                   "Lapor Pak",
                   style: TextStyle(
@@ -108,7 +124,9 @@ class _SplashScreenState extends State<SplashScreen>
                 // Subjudul
                 Padding(
                   padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.1, vertical: 10),
+                    horizontal: screenWidth * 0.1,
+                    vertical: 10,
+                  ),
                   child: Text(
                     "Bersama Peduli Membawa Perubahan",
                     textAlign: TextAlign.center,

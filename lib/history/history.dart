@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../flutterViz_bottom_navigationBar_model.dart';
+import 'package:flutter_application_1/services/api_service.dart';
+import 'package:flutter_application_1/services/storage_service.dart';
 
 // 🔹 Import halaman lain
 import '../Home/home.dart';
@@ -17,30 +19,9 @@ class HistoryLaporan extends StatefulWidget {
 class _HistoryLaporanPageState extends State<HistoryLaporan> {
   int _selectedIndex = 3;
   String selectedFilter = "All";
-
-  final List<Map<String, dynamic>> laporanList = [
-    {
-      "judul": "Jalan Lubang",
-      "lokasi": "Didepan Pos Satpam",
-      "jam": "07:00 AM",
-      "status": "Dalam Proses",
-      "image": "assets/jalan_lubang.png",
-    },
-    {
-      "judul": "Lampu Mati",
-      "lokasi": "Disamping Balai RT",
-      "jam": "07:00 AM",
-      "status": "Terkirim",
-      "image": "assets/lampu_mati.png",
-    },
-    {
-      "judul": "Jalan Lampu Mati",
-      "lokasi": "Didepan Blok A-2",
-      "jam": "07:00 AM",
-      "status": "Selesai",
-      "image": "assets/lampu_selesai.png",
-    },
-  ];
+  bool _loading = false;
+  String? _error;
+  List<dynamic> _aduan = [];
 
   final List<String> filters = ["All", "Terkirim", "Dalam Proses", "Selesai"];
 
@@ -52,7 +33,6 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
     FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
   ];
 
-  // 🔹 Navigasi antar halaman (disamakan dengan semua halaman lain)
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
 
@@ -84,35 +64,86 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  int? _filterToStatus(String filter) {
+    switch (filter) {
+      case 'Terkirim':
+        return 1;
+      case 'Dalam Proses':
+        return 2;
+      case 'Selesai':
+        return 3;
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final token = await StorageService.getToken();
+      if (token == null) {
+        setState(() {
+          _error = 'Anda belum login.';
+        });
+        return;
+      }
+
+      final status = _filterToStatus(selectedFilter);
+      final res = await ApiService.getWargaAduan(token: token, status: status);
+      setState(() {
+        _aduan = (res['data'] as List<dynamic>);
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final filteredList = selectedFilter == "All"
-        ? laporanList
-        : laporanList.where((item) => item["status"] == selectedFilter).toList();
+    final filteredList = _aduan;
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f7f7),
 
-      // ========================== APP BAR ==========================
+      // ✅ HEADER DISESUAIKAN DENGAN RT
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
+        backgroundColor: const Color(0xff5f34e0),
+        elevation: 4,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "History Laporan",
           style: TextStyle(
-            color: Colors.black87,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
         ),
-        centerTitle: true,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 15),
-            child: Icon(Icons.notifications_none, color: Color(0xff5f34e0)),
+            child: ImageIcon(
+              AssetImage('assets/logo.png'),
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ],
       ),
@@ -120,23 +151,27 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
       // ========================== BODY ==========================
       body: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildFilterBar(),
           const SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              itemCount: filteredList.length,
-              itemBuilder: (context, index) {
-                final item = filteredList[index];
-                return _buildReportCard(item);
-              },
+          if (_loading) const Expanded(child: Center(child: CircularProgressIndicator()))
+          else if (_error != null)
+            Expanded(child: Center(child: Text(_error!)))
+          else
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                itemCount: filteredList.length,
+                itemBuilder: (context, index) {
+                  final item = filteredList[index] as Map<String, dynamic>;
+                  return _buildReportCard(item);
+                },
+              ),
             ),
-          ),
         ],
       ),
 
-      // ========================== ✅ BOTTOM NAVBAR (FINAL VERSION) ==========================
+      // ✅ BOTTOM NAVBAR (warna ungu RT-style)
       bottomNavigationBar: BottomNavigationBar(
         items: navItems
             .map(
@@ -171,7 +206,10 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
         children: filters.map((filter) {
           final isSelected = selectedFilter == filter;
           return GestureDetector(
-            onTap: () => setState(() => selectedFilter = filter),
+            onTap: () async {
+              setState(() => selectedFilter = filter);
+              await _loadData();
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               margin: const EdgeInsets.symmetric(horizontal: 6),
@@ -180,7 +218,9 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
                 color: isSelected ? const Color(0xff5f34e0) : Colors.white,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: isSelected ? const Color(0xff5f34e0) : Colors.grey.shade300,
+                  color: isSelected
+                      ? const Color(0xff5f34e0)
+                      : Colors.grey.shade300,
                   width: 1,
                 ),
                 boxShadow: isSelected
@@ -211,19 +251,46 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
   // ========================== KARTU LAPORAN ==========================
   Widget _buildReportCard(Map<String, dynamic> item) {
     Color statusColor;
-    switch (item["status"]) {
-      case "Terkirim":
+    String statusLabel;
+    switch (item['status']) {
+      case 1:
         statusColor = const Color(0xff5f34e0);
+        statusLabel = 'Terkirim';
         break;
-      case "Dalam Proses":
+      case 2:
         statusColor = Colors.orangeAccent;
+        statusLabel = 'Dalam Proses';
         break;
-      case "Selesai":
+      case 3:
         statusColor = Colors.green;
+        statusLabel = 'Selesai';
         break;
       default:
         statusColor = Colors.grey;
+        statusLabel = 'Tidak diketahui';
     }
+
+    final String? fotoPath = item['foto'];
+    final imageWidget = (fotoPath != null)
+        ? Image.network(
+            '${ApiService.baseHost}/storage/$fotoPath',
+            width: double.infinity,
+            height: 170,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stack) => Container(
+              color: Colors.grey.shade200,
+              height: 170,
+              alignment: Alignment.center,
+              child: const Icon(Icons.broken_image, color: Colors.grey),
+            ),
+          )
+        : Container(
+            color: Colors.grey.shade200,
+            width: double.infinity,
+            height: 170,
+            alignment: Alignment.center,
+            child: const Icon(Icons.image, color: Colors.grey),
+          );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -246,12 +313,7 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
               topLeft: Radius.circular(16),
               topRight: Radius.circular(16),
             ),
-            child: Image.asset(
-              item["image"],
-              width: double.infinity,
-              height: 170,
-              fit: BoxFit.cover,
-            ),
+            child: imageWidget,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -263,7 +325,7 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item["judul"],
+                        (item["judul"] ?? '').toString(),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -272,7 +334,7 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item["lokasi"],
+                        (item["deskripsi"] ?? '').toString(),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.black54,
@@ -285,7 +347,7 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
                               size: 13, color: Color(0xff5f34e0)),
                           const SizedBox(width: 4),
                           Text(
-                            item["jam"],
+                            (item["tanggal"] ?? '').toString(),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black54,
@@ -304,7 +366,7 @@ class _HistoryLaporanPageState extends State<HistoryLaporan> {
                     border: Border.all(color: statusColor.withOpacity(0.4)),
                   ),
                   child: Text(
-                    item["status"],
+                    statusLabel,
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.w600,

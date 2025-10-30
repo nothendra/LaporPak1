@@ -45,9 +45,6 @@ class _ProfilKetuaState extends State<ProfilKetua> {
           MaterialPageRoute(builder: (context) => const Historyyrt()),
         );
         break;
-      case 3:
-        // Halaman ini (Akun)
-        break;
     }
   }
 
@@ -56,58 +53,50 @@ class _ProfilKetuaState extends State<ProfilKetua> {
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
 
+      /// ✅ APP BAR (header sama persis seperti Date & History)
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
         backgroundColor: const Color(0xff5f34e0),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreenrt()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
         title: const Text(
-          "Lapor Pak",
+          'Profil Ketua RT',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
-        actions: const [
-          Icon(Icons.notifications_none, color: Colors.white, size: 24),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 22,
+              height: 22,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
 
-      // ✅ BOTTOM NAVIGATION BAR SAMA SEPERTI HALAMAN LAIN
-      bottomNavigationBar: BottomNavigationBar(
-        items: navItems
-            .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                label: item.label,
-              ),
-            )
-            .toList(),
-        currentIndex: _selectedIndex,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        iconSize: 22,
-        selectedItemColor: const Color(0xff5f33e2),
-        unselectedItemColor: const Color(0xffb5a1f0),
-        selectedFontSize: 10,
-        unselectedFontSize: 9,
-        showSelectedLabels: true,
-        showUnselectedLabels: false,
-        type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
-      ),
-
-      // =============================
-      // BODY
-      // =============================
+      /// ✅ BODY
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
         child: Column(
           children: [
-            // ==================================
-            // 1️⃣ FOTO PROFIL & NAMA
-            // ==================================
+            const SizedBox(height: 25),
+
+            // ====================================================
+            // 🔹 FOTO PROFIL + NAMA + JABATAN
+            // ====================================================
             Stack(
               alignment: Alignment.center,
               children: [
@@ -159,62 +148,96 @@ class _ProfilKetuaState extends State<ProfilKetua> {
             ),
             const SizedBox(height: 25),
 
-            // ==================================
-            // 2️⃣ INFO KONTAK
-            // ==================================
-            _infoCard(
-              icon: Icons.mail_outline,
-              title: "Email",
-              value: "emailpakrete@gmail.com",
-            ),
-            const SizedBox(height: 14),
-            _infoCard(
-              icon: Icons.location_on_outlined,
-              title: "Alamat",
-              value:
-                  "Perumahan Alfa, Blok A-12, Blimbing, Kec. Torimiso, Kota Malang, 65112",
+            // ====================================================
+            // 🔹 INFORMASI KONTAK
+            // ====================================================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _infoCard(
+                    icon: Icons.mail_outline,
+                    title: "Email",
+                    value: "emailpakrete@gmail.com",
+                  ),
+                  const SizedBox(height: 14),
+                  _infoCard(
+                    icon: Icons.location_on_outlined,
+                    title: "Alamat",
+                    value:
+                        "Perumahan Alfa, Blok A-12, Blimbing, Kec. Torimiso, Kota Malang, 65112",
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 35),
 
-            // ==================================
-            // 3️⃣ TOMBOL LOGOUT
-            // ==================================
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Tambahkan aksi logout
-                },
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text(
-                  "Keluar Akun",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            // ====================================================
+            // 🔹 TOMBOL LOGOUT
+            // ====================================================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Tambahkan aksi logout nanti
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text(
+                    "Keluar Akun",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff5f34e0),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff5f34e0),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
                   ),
-                  elevation: 3,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
           ],
         ),
+      ),
+
+      /// ✅ Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        items: navItems
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.label,
+              ),
+            )
+            .toList(),
+        currentIndex: _selectedIndex,
+        backgroundColor: Colors.white,
+        elevation: 8,
+        iconSize: 22,
+        selectedItemColor: const Color(0xff5f33e2),
+        unselectedItemColor: const Color(0xffb5a1f0),
+        selectedFontSize: 10,
+        unselectedFontSize: 9,
+        showSelectedLabels: true,
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
       ),
     );
   }
 
-  // ==================================
-  // REUSABLE WIDGET INFO CARD
-  // ==================================
+  // ====================================================
+  // 🔹 REUSABLE WIDGET — INFO CARD
+  // ====================================================
   Widget _infoCard({
     required IconData icon,
     required String title,

@@ -58,28 +58,44 @@ class Profile extends StatelessWidget {
       backgroundColor: const Color(0xfff8f8f8),
 
       // =============================
-      // APP BAR
+      // ✅ APP BAR (diseragamkan dengan RT & Admin)
       // =============================
       appBar: AppBar(
-        elevation: 4,
-        centerTitle: true,
         backgroundColor: const Color(0xff5f34e0),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeWarga()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
         title: const Text(
-          "Lapor Pak",
+          'Profil Warga',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
-        actions: const [
-          Icon(Icons.notifications_none, color: Colors.white, size: 24),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 22,
+              height: 22,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
 
       // =============================
-      // ✅ BOTTOM NAVIGATION (SAMA PERSIS DENGAN DATEPAGE)
+      // ✅ BOTTOM NAVIGATION (TIDAK DIUBAH)
       // =============================
       bottomNavigationBar: BottomNavigationBar(
         items: navItems
@@ -105,7 +121,7 @@ class Profile extends StatelessWidget {
       ),
 
       // =============================
-      // BODY
+      // ✅ BODY (TIDAK DIUBAH)
       // =============================
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
@@ -219,7 +235,7 @@ class Profile extends StatelessWidget {
   }
 
   // ==================================
-  // REUSABLE WIDGET INFO CARD
+  // REUSABLE WIDGET INFO CARD (TIDAK DIUBAH)
   // ==================================
   Widget _infoCard({
     required IconData icon,

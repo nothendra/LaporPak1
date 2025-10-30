@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Login/login.dart'; // sesuaikan path-nya
+import 'package:flutter_application_1/Login/login.dart';
+import 'package:video_player/video_player.dart'; // ← Tambahkan package ini
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -14,21 +15,51 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> onboardingData = [
     {
-      "image": "assets/illustration1.png",
+      "video": "assets/illustration1.mp4",
       "title": "Selamat Datang di Lapor Pak",
       "subtitle": "Solusi digital untuk pengaduan masalah di kampung anda."
     },
     {
-      "image": "assets/illustration2.png",
+      "video": "assets/illustration2.mp4",
       "title": "Suara Anda, Prioritas Kami",
       "subtitle": "Sampaikan keluhan langsung lewat aplikasi dengan cepat dan tepat."
     },
     {
-      "image": "assets/illustration3.png",
+      "video": "assets/illustration3.mp4",
       "title": "Jadwal Rapi, Acara Happy!",
       "subtitle": "Lihat jadwal kegiatan RT/RW dalam satu tampilan. Tak ada lagi acara terlewat!"
     },
   ];
+
+  final List<VideoPlayerController> _videoControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ Inisialisasi controller video (tanpa error)
+    for (var item in onboardingData) {
+      final controller = VideoPlayerController.asset(item["video"]!);
+
+      controller.setLooping(true); // video looping
+      controller.initialize().then((_) {
+        controller.setVolume(0); // tanpa suara
+        controller.play(); // auto play looping
+        setState(() {}); // update tampilan saat video siap
+      });
+
+      _videoControllers.add(controller);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _videoControllers) {
+      controller.dispose();
+    }
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +84,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        onboardingData[index]["image"]!,
-                        height: screenHeight * 0.35,
-                        fit: BoxFit.contain,
-                      ),
+                      // 🎬 Tampilkan video (bukan gambar)
+                      _videoControllers[index].value.isInitialized
+                          ? AspectRatio(
+                              aspectRatio:
+                                  _videoControllers[index].value.aspectRatio,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: VideoPlayer(_videoControllers[index]),
+                              ),
+                            )
+                          : Container(
+                              height: screenHeight * 0.35,
+                              alignment: Alignment.center,
+                              child: const CircularProgressIndicator(),
+                            ),
+
                       const SizedBox(height: 30),
                       Text(
                         onboardingData[index]["title"]!,

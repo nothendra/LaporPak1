@@ -56,10 +56,6 @@ class _DateAdminState extends State<DateAdmin> {
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
 
-    setState(() {
-      _selectedIndex = index;
-    });
-
     switch (index) {
       case 0:
         Navigator.pushReplacement(
@@ -94,26 +90,37 @@ class _DateAdminState extends State<DateAdmin> {
 
     return Scaffold(
       backgroundColor: const Color(0xffffffff),
+
+      // ✅ HEADER DISESUAIKAN DENGAN HALAMAN LAIN (RT/WARGA)
       appBar: AppBar(
+        backgroundColor: const Color(0xff5f34e0),
         elevation: 4,
         centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xff5f34e0),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
-          "Lapor Pak",
+          "Kalender Pengaduan",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
         actions: const [
-          Icon(Icons.notifications, color: Colors.white, size: 24),
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: ImageIcon(
+              AssetImage('assets/logo.png'),
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
         ],
       ),
 
-      // 🔽 Bottom Navigation Bar
+      // 🔽 Bottom Navigation Bar (ungu RT-style)
       bottomNavigationBar: BottomNavigationBar(
         items: flutterVizBottomNavigationBarItems
             .map((e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label))
@@ -132,7 +139,7 @@ class _DateAdminState extends State<DateAdmin> {
         onTap: _onItemTapped,
       ),
 
-      // 🧾 Body
+      // 🧾 BODY
       body: SingleChildScrollView(
         child: Column(
           children: [

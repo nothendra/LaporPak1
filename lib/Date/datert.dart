@@ -21,6 +21,7 @@ class _DatePageState extends State<DatePageRT> {
 
   int _selectedIndex = 1;
   DateTime _selectedDate = DateTime.now();
+  String _selectedFilter = "All";
 
   final List<Map<String, dynamic>> _allReports = [
     {
@@ -52,22 +53,16 @@ class _DatePageState extends State<DatePageRT> {
     },
   ];
 
-  String _selectedFilter = "All";
-
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
+
     switch (index) {
       case 0:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreenrt()),
         );
-        break;
-      case 1:
-        // Halaman ini
         break;
       case 2:
         Navigator.pushReplacement(
@@ -78,7 +73,7 @@ class _DatePageState extends State<DatePageRT> {
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProfilKetua()),
+          MaterialPageRoute(builder: (context) => const ProfilKetua()),
         );
         break;
     }
@@ -91,27 +86,168 @@ class _DatePageState extends State<DatePageRT> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: const Color(0xffffffff),
+
+      // ✅ AppBar Tinggi Standar (tidak kelebihan)
       appBar: AppBar(
+        backgroundColor: const Color(0xff5f34e0),
         elevation: 4,
         centerTitle: true,
-        automaticallyImplyLeading: true,
-        backgroundColor: const Color(0xff5f34e0),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreenrt()),
+            );
+          },
+        ),
         title: const Text(
-          "Lapor Pak",
+          "Date Laporan RT",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
             color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
           ),
         ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 15),
+            child: ImageIcon(
+              AssetImage('assets/logo.png'),
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ],
       ),
 
-      // ✅ BOTTOM NAVIGATION BAR DIBENERIN
+      body: Column(
+        children: [
+          // ===============================
+          // ✅ BODY ISI HALAMAN
+          // ===============================
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Kalender Pengaduan
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.calendar_today,
+                                    color: Color(0xff5f34e0), size: 18),
+                                SizedBox(width: 6),
+                                Text(
+                                  "Kalender Pengaduan",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xff5f34e0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: Color(0xff5f34e0),
+                                onPrimary: Colors.white,
+                                onSurface: Colors.black87,
+                              ),
+                            ),
+                            child: CalendarDatePicker(
+                              initialDate: _selectedDate,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2050),
+                              onDateChanged: (date) {
+                                setState(() {
+                                  _selectedDate = date;
+                                });
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Text(
+                              "Tanggal Hari Ini: ${_selectedDate.day}-${_selectedDate.month}-${_selectedDate.year}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xff5f34e0),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Tombol filter status
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      children: [
+                        _buildFilterButton(label: "All"),
+                        _buildFilterButton(label: "On Hold"),
+                        _buildFilterButton(label: "In Progress"),
+                        _buildFilterButton(label: "Done"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Daftar laporan sesuai filter
+                  ..._filteredReports.map((report) {
+                    return _buildReportCard(
+                      report['title'],
+                      report['location'],
+                      report['time'],
+                      report['status'],
+                      report['statusColor'],
+                      report['icon'],
+                      report['iconColor'],
+                    );
+                  }).toList(),
+
+                  const SizedBox(height: 50),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      // ===============================
+      // ✅ BOTTOM NAVIGATION BAR
+      // ===============================
       bottomNavigationBar: BottomNavigationBar(
         items: flutterVizBottomNavigationBarItems
             .map((e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label))
@@ -128,119 +264,6 @@ class _DatePageState extends State<DatePageRT> {
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-      ),
-
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Kalender Pengaduan
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.calendar_today, color: Color(0xff5f34e0), size: 18),
-                          SizedBox(width: 6),
-                          Text(
-                            "Kalender Pengaduan",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Color(0xff5f34e0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1, thickness: 1),
-                    Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: const ColorScheme.light(
-                          primary: Color(0xff5f34e0),
-                          onPrimary: Colors.white,
-                          onSurface: Colors.black87,
-                        ),
-                      ),
-                      child: CalendarDatePicker(
-                        initialDate: _selectedDate,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2050),
-                        onDateChanged: (date) {
-                          setState(() {
-                            _selectedDate = date;
-                          });
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(
-                        "Tanggal Hari Ini: ${_selectedDate.day}-${_selectedDate.month}-${_selectedDate.year}",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xff5f34e0),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tombol filter status
-            SizedBox(
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: [
-                  _buildFilterButton(label: "All"),
-                  _buildFilterButton(label: "On Hold"),
-                  _buildFilterButton(label: "In Progress"),
-                  _buildFilterButton(label: "Done"),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Daftar laporan sesuai filter
-            ..._filteredReports.map((report) {
-              return _buildReportCard(
-                screenWidth,
-                report['title'],
-                report['location'],
-                report['time'],
-                report['status'],
-                report['statusColor'],
-                report['icon'],
-                report['iconColor'],
-              );
-            }).toList(),
-
-            const SizedBox(height: 50),
-          ],
-        ),
       ),
     );
   }
@@ -275,7 +298,6 @@ class _DatePageState extends State<DatePageRT> {
   }
 
   Widget _buildReportCard(
-    double screenWidth,
     String title,
     String location,
     String time,

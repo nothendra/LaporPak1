@@ -7,6 +7,8 @@ import 'package:flutter_application_1/Home/home.dart';
 import 'package:flutter_application_1/Date/date.dart';
 import 'package:flutter_application_1/history/history.dart';
 import 'package:flutter_application_1/akun/akun.dart';
+import 'package:flutter_application_1/services/api_service.dart';
+import 'package:flutter_application_1/services/storage_service.dart';
 
 class UploadKeluhan extends StatefulWidget {
   const UploadKeluhan({super.key});
@@ -88,30 +90,47 @@ class _UploadKeluhanPageState extends State<UploadKeluhan> {
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f7f7),
+
+      // =====================================================
+      // ✅ APP BAR (Diseragamkan dengan halaman lainnya)
+      // =====================================================
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xff5f34e0),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeWarga()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(
           "Upload Keluhan",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 16,
           ),
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.notifications_none, color: Colors.black87),
-          )
+            padding: const EdgeInsets.only(right: 15),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 22,
+              height: 22,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
 
+      // =====================================================
+      // BODY (TIDAK DIUBAH)
+      // =====================================================
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
@@ -307,20 +326,64 @@ class _UploadKeluhanPageState extends State<UploadKeluhan> {
 
             const SizedBox(height: 30),
 
-            // Tombol Tambah Keluhan
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Keluhan berhasil ditambahkan!")),
-                  );
-                  Future.delayed(const Duration(milliseconds: 800), () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HistoryLaporan()),
+                onPressed: () async {
+                  final deskripsi = _deskripsiController.text.trim();
+                  final lokasi = _lokasiController.text.trim();
+                  final tanggal = selectedDate;
+
+                  if (deskripsi.isEmpty || tanggal == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Isi deskripsi dan pilih tanggal.')),
                     );
-                  });
+                    return;
+                  }
+
+                  try {
+                    final token = await StorageService.getToken();
+                    if (token == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Anda belum login.')),
+                      );
+                      return;
+                    }
+
+                    final judul = 'Keluhan Warga';
+                    final deskripsiGabung = lokasi.isEmpty
+                        ? deskripsi
+                        : '$deskripsi\nLokasi: $lokasi';
+                    final tglStr =
+                        '${tanggal.year.toString().padLeft(4, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.day.toString().padLeft(2, '0')}';
+
+                    File? fotoFile;
+                    if (!kIsWeb && _imageFile != null) {
+                      fotoFile = File(_imageFile!.path);
+                    }
+
+                    await ApiService.createAduan(
+                      token: token,
+                      judul: judul,
+                      deskripsi: deskripsiGabung,
+                      tanggal: tglStr,
+                      foto: fotoFile,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Keluhan berhasil ditambahkan!')),
+                    );
+                    Future.delayed(const Duration(milliseconds: 800), () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HistoryLaporan()),
+                      );
+                    });
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal menambahkan: $e')),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xff5f34e0),
@@ -347,7 +410,7 @@ class _UploadKeluhanPageState extends State<UploadKeluhan> {
       ),
 
       // =====================================================
-      // ✅ Bottom Navigation (sama persis seperti DatePage)
+      // ✅ Bottom Navigation (TIDAK DIUBAH)
       // =====================================================
       bottomNavigationBar: BottomNavigationBar(
         items: navItems

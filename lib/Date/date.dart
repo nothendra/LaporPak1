@@ -18,7 +18,7 @@ class _DatePageState extends State<DatePage> {
     FlutterVizBottomNavigationBarModel(icon: Icons.calendar_today, label: "Date"),
     FlutterVizBottomNavigationBarModel(icon: Icons.add, label: "Tambah"),
     FlutterVizBottomNavigationBarModel(icon: Icons.description, label: "History"),
-    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account")
+    FlutterVizBottomNavigationBarModel(icon: Icons.account_circle, label: "Account"),
   ];
 
   int _selectedIndex = 1; // posisi default halaman Date
@@ -54,7 +54,7 @@ class _DatePageState extends State<DatePage> {
     },
   ];
 
-  // ✅ Navigasi antar halaman (pakai switch widget)
+  // ✅ Navigasi antar halaman
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
 
@@ -91,24 +91,42 @@ class _DatePageState extends State<DatePage> {
 
     return Scaffold(
       backgroundColor: const Color(0xffffffff),
+
+      // ✅ HEADER (AppBar) diperbaiki dan diseimbangkan
       appBar: AppBar(
+        backgroundColor: const Color(0xff5f34e0),
         elevation: 4,
         centerTitle: true,
-        automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xff5f34e0),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeWarga()),
+            );
+          },
+        ),
         title: const Text(
-          "Lapor Pak",
+          "Date Laporan Warga",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16,
             color: Colors.white,
           ),
         ),
-        leading: const Icon(Icons.menu, color: Colors.white, size: 24),
         actions: const [
-          Icon(Icons.notifications, color: Colors.white, size: 24),
+          Padding(
+            padding: EdgeInsets.only(right: 15),
+            child: ImageIcon(
+              AssetImage('assets/logo.png'),
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
         ],
       ),
+
+      // ✅ Bottom Navigation
       bottomNavigationBar: BottomNavigationBar(
         items: flutterVizBottomNavigationBarItems
             .map((e) => BottomNavigationBarItem(icon: Icon(e.icon), label: e.label))
@@ -124,8 +142,10 @@ class _DatePageState extends State<DatePage> {
         showSelectedLabels: true,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped, // ✅ ganti dari kosong ke fungsi navigasi
+        onTap: _onItemTapped,
       ),
+
+      // ✅ Body tetap sama
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -175,7 +195,6 @@ class _DatePageState extends State<DatePage> {
                         setState(() {
                           _selectedDate = date;
                         });
-                        debugPrint('Tanggal dipilih: $_selectedDate');
                       },
                     ),
 
@@ -211,6 +230,7 @@ class _DatePageState extends State<DatePage> {
             ),
 
             const SizedBox(height: 16),
+
             ..._reports.map((report) {
               return _buildReportCard(
                 screenWidth,

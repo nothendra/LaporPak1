@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_provider.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,6 +17,7 @@ class _LoginState extends State<Login> {
   String? selectedRole;
   bool setuju = false;
   bool passwordVisible = false;
+  bool _isLoading = false;
 
   // ✅ Tambahkan "Admin" tanpa ubah desain
   final List<String> roles = ["Ketua RT", "Warga", "Admin"];
@@ -165,33 +168,70 @@ class _LoginState extends State<Login> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: setuju && selectedRole != null
-                      ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  "Masuk sebagai ${selectedRole!} berhasil!"),
-                            ),
-                          );
-
-                          // 🟢 Navigasi sesuai role
-                          if (selectedRole == "Ketua RT") {
-                            Navigator.pushNamed(context, '/rt_home');
-                          } else if (selectedRole == "Warga") {
-                            Navigator.pushNamed(context, '/home');
-                          } else if (selectedRole == "Admin") {
-                            Navigator.pushNamed(context, '/home_admin');
+                  onPressed: setuju && selectedRole != null && !_isLoading
+                      ? () async {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          
+                          try {
+                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                            
+                            // Attempt to login
+                            final success = await authProvider.login(
+                              email: emailController.text,
+                              password: passwordController.text,
+                            );
+                            
+                            if (success && mounted) {
+                              // Get the role from the authenticated user
+                              final userRole = authProvider.userRole;
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Masuk berhasil!"),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              
+                              // Navigate based on the role from the backend
+                              if (userRole == 'rt') {
+                                Navigator.pushReplacementNamed(context, '/rt_home');
+                              } else if (userRole == 'warga') {
+                                Navigator.pushReplacementNamed(context, '/home');
+                              } else if (userRole == 'admin') {
+                                Navigator.pushReplacementNamed(context, '/home_admin');
+                              }
+                            }
+                          } catch (e) {
+                            // Show error message
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Login gagal: ${e.toString()}"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            }
                           }
                         }
                       : null,
-                  child: const Text(
-                    "Masuk",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Masuk",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

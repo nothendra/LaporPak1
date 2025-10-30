@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/services/auth_provider.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -15,6 +17,7 @@ class _SignUpState extends State<SignUp> {
   String? selectedRole;
   bool setuju = false;
   bool passwordVisible = false;
+  bool _isLoading = false;
 
   final List<String> roles = ["Ketua RT", "Warga"];
 
@@ -62,10 +65,7 @@ class _SignUpState extends State<SignUp> {
               const Text(
                 "Silakan isi data di bawah ini untuk membuat akun baru.",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xff000000),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xff000000)),
               ),
               const SizedBox(height: 30),
 
@@ -79,7 +79,10 @@ class _SignUpState extends State<SignUp> {
 
               // Role (Peran)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xff6135e1), width: 1),
                   borderRadius: BorderRadius.circular(8),
@@ -89,12 +92,13 @@ class _SignUpState extends State<SignUp> {
                     value: selectedRole,
                     isExpanded: true,
                     hint: const Text("Pilih Peran"),
-                    items: roles.map((String role) {
-                      return DropdownMenuItem<String>(
-                        value: role,
-                        child: Text(role),
-                      );
-                    }).toList(),
+                    items:
+                        roles.map((String role) {
+                          return DropdownMenuItem<String>(
+                            value: role,
+                            child: Text(role),
+                          );
+                        }).toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedRole = value;
@@ -126,9 +130,7 @@ class _SignUpState extends State<SignUp> {
                   prefixIcon: const Icon(Icons.lock, color: Color(0xff6135e1)),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      passwordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                      passwordVisible ? Icons.visibility : Icons.visibility_off,
                       color: const Color(0xff6135e1),
                     ),
                     onPressed: () {
@@ -170,35 +172,84 @@ class _SignUpState extends State<SignUp> {
                 height: 45,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: setuju && selectedRole != null
-                        ? const Color(0xff6236e6)
-                        : Colors.grey.shade400,
+                    backgroundColor:
+                        setuju && selectedRole != null
+                            ? const Color(0xff6236e6)
+                            : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: setuju && selectedRole != null
-                      ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Akun dengan peran ${selectedRole!} berhasil dibuat!",
-                              ),
+                  onPressed:
+                      setuju && selectedRole != null && !_isLoading
+                          ? () async {
+                            if (selectedRole != 'Warga') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Saat ini pendaftaran hanya untuk Warga. Hubungi admin untuk peran lain.',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() {
+                              _isLoading = true;
+                            });
+
+                            try {
+                              final authProvider = Provider.of<AuthProvider>(
+                                context,
+                                listen: false,
+                              );
+                              final success = await authProvider.register(
+                                name: namaController.text.trim(),
+                                email: emailController.text.trim(),
+                                password: passwordController.text,
+                                role: 'warga',
+                              );
+
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Pendaftaran berhasil!'),
+                                  ),
+                                );
+                                // Navigate to role home (should be warga)
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/home',
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Pendaftaran gagal: $e'),
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            }
+                          }
+                          : null,
+                  child:
+                      _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            "Daftar",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
-                          );
-                          Future.delayed(const Duration(seconds: 1), () {
-                            Navigator.pushReplacementNamed(context, '/login');
-                          });
-                        }
-                      : null,
-                  child: const Text(
-                    "Daftar",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
+                          ),
                 ),
               ),
             ],
@@ -218,9 +269,7 @@ class _SignUpState extends State<SignUp> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Color(0xff6135e1)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         prefixIcon: Icon(icon, color: const Color(0xff6135e1)),
       ),
     );
